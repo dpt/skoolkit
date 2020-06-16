@@ -689,8 +689,10 @@ def get_section(name):
     return _format_section(name)
 
 def get_sections(prefix):
-    sections = []
-    for section_name in SECTIONS:
-        if re.match(prefix, section_name):
-            sections.append(_format_section(section_name))
+    sections = [
+        _format_section(section_name)
+        for section_name in SECTIONS
+        if re.match(prefix, section_name)
+    ]
+
     return '\n'.join(sections)

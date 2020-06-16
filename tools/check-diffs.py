@@ -143,23 +143,19 @@ def run(diff_file, exp_diffs_file):
     lines = []
     last_fname = None
     for fname, old, new in diffs:
-        ignore = False
-        for ignore_file in ignore_files:
-            if fname.endswith(ignore_file):
-                ignore = True
-                break
+        ignore = any(fname.endswith(ignore_file) for ignore_file in ignore_files)
         if ignore:
             continue
 
         old_lines = [line[1:] for line in old]
         new_lines = [line[1:] for line in new]
 
-        ignore = False
         all_lines = old_lines + new_lines
-        for regex in ignore_regexes:
-            if any(re.search(regex, line) for line in all_lines):
-                ignore = True
-                break
+        ignore = any(
+            any(re.search(regex, line) for line in all_lines)
+            for regex in ignore_regexes
+        )
+
         if ignore:
             continue
 

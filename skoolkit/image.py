@@ -272,18 +272,12 @@ class NoMask:
 class OrAndMask:
     def apply(self, udg, row, paper, ink, trans):
         udg_byte = udg.data[row]
-        if udg.mask:
-            mask_byte = udg.mask[row]
-        else:
-            mask_byte = udg_byte
+        mask_byte = udg.mask[row] if udg.mask else udg_byte
         pixels = [paper] * 8
         index = 7
         while mask_byte:
             if mask_byte & 1:
-                if udg_byte & 1:
-                    pixels[index] = ink
-                else:
-                    pixels[index] = trans
+                pixels[index] = ink if udg_byte & 1 else trans
             udg_byte //= 2
             mask_byte //= 2
             index -= 1
@@ -300,10 +294,7 @@ class OrAndMask:
 class AndOrMask:
     def apply(self, udg, row, paper, ink, trans):
         udg_byte = udg.data[row]
-        if udg.mask:
-            mask_byte = udg.mask[row]
-        else:
-            mask_byte = udg_byte
+        mask_byte = udg.mask[row] if udg.mask else udg_byte
         pixels = [paper] * 8
         index = 7
         while udg_byte or mask_byte:

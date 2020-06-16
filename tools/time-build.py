@@ -23,7 +23,7 @@ def write(line):
 
 def clock(method, *args):
     elapsed = []
-    for n in range(3):
+    for _ in range(3):
         gc.collect()
         start = time.time()
         method(*args)
@@ -31,7 +31,7 @@ def clock(method, *args):
 
     trials = max((10, int(2000 / min(elapsed))))
     elapsed = []
-    for n in range(trials):
+    for _ in range(trials):
         start = time.time()
         method(*args)
         elapsed.append((time.time() - start) * 1000)
@@ -180,13 +180,15 @@ def time_methods(method1_name, method2_name, udg_arrays, scale):
 
 def list_methods():
     prefix = '_build_image_data_'
-    methods = []
     iw = ImageWriter()
     png_writer = iw.writers['png']
-    for attr in dir(png_writer):
-        if attr.startswith(prefix) and not attr.endswith('_bd0'):
-            methods.append(attr)
-    max_len = max([len(m) for m in methods]) - len(prefix)
+    methods = [
+        attr
+        for attr in dir(png_writer)
+        if attr.startswith(prefix) and not attr.endswith('_bd0')
+    ]
+
+    max_len = max(len(m) for m in methods) - len(prefix)
     for m in methods:
         write('{} ({})'.format(m[len(prefix):].ljust(max_len), m))
     sys.exit()
@@ -245,7 +247,7 @@ Available options:
 # Begin
 ###############################################################################
 method1_name, method2_name, run_all, udgs, scales = parse_args(sys.argv[1:])
-udg_arrays = tuple([eval(udg_array) for udg_array in udgs])
+udg_arrays = tuple(eval(udg_array) for udg_array in udgs)
 gc.disable()
 if run_all:
     for name1, name2, f in METHODS:

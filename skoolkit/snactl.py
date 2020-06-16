@@ -44,7 +44,7 @@ def _get_code_blocks(snapshot, start, end, fname):
         data = read_bin_file(fname)
         address = start & 65528
         for b in data[start // 8:end // 8 + 1]:
-            for i in range(8):
+            for _ in range(8):
                 if b & 1 and start <= address < end:
                     addresses.append(address)
                 b >>= 1
@@ -220,10 +220,7 @@ def _generate_ctls_with_code_map(snapshot, start, end, config, code_map):
                     for referrer in instruction.referrers:
                         if ctls[referrer] == 'c':
                             ctls[instruction.address] = 'c'
-                            if entry.next:
-                                e_end = entry.next.address
-                            else:
-                                e_end = 65536
+                            e_end = entry.next.address if entry.next else 65536
                             _find_terminal_instruction(snapshot, ctls, instruction.address, e_end, entry.ctl)
                             disassembly.remove_entry(entry.address)
                             done = False

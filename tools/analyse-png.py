@@ -85,10 +85,10 @@ def _get_png_info(data):
 
     u_data = decompress(idat_data)
 
-    if bit_depth == 4:
-        scanline_len = 2 + width // 2 if width & 1 else 1 + width // 2
-    elif bit_depth == 2:
+    if bit_depth == 2:
         scanline_len = 2 + width // 4 if width & 3 else 1 + width // 4
+    elif bit_depth == 4:
+        scanline_len = 2 + width // 2 if width & 1 else 1 + width // 2
     else:
         scanline_len = 2 + width // 8 if width & 7 else 1 + width // 8
 
@@ -125,11 +125,11 @@ def _get_png_info(data):
             pixel_row.append(palette[(byte & 240) // 16])
             pixel_row.append(palette[byte & 15])
         elif bit_depth == 2:
-            for b in range(4):
+            for _ in range(4):
                 pixel_row.append(palette[(byte & 192) // 64])
                 byte *= 4
         else:
-            for b in range(8):
+            for _ in range(8):
                 pixel_row.append(palette[(byte & 128) // 128])
                 byte *= 2
     pixels.append(pixel_row[:width])
@@ -154,11 +154,11 @@ def show_diffs(fname1, data1, fname2, data2):
             diffs.append('width: {}, {}'.format(w1, w2))
         if h1 != h2:
             diffs.append('height: {}, {}'.format(h1, h2))
-        if not diffs:
-            for y, (row1, row2) in enumerate(zip(p1, p2)):
-                for x, (rgb1, rgb2) in enumerate(zip(row1, row2)):
-                    if rgb1 != rgb2:
-                        diffs.append('pixel at ({},{}): {}, {}'.format(x, y, rgb1, rgb2))
+    if not diffs:
+        for y, (row1, row2) in enumerate(zip(p1, p2)):
+            for x, (rgb1, rgb2) in enumerate(zip(row1, row2)):
+                if rgb1 != rgb2:
+                    diffs.append('pixel at ({},{}): {}, {}'.format(x, y, rgb1, rgb2))
 
     if diffs:
         print(fname1)
@@ -190,18 +190,18 @@ def analyse_filters(data):
 
     u_data = decompress(idat_data)
 
-    if bit_depth == 8:
-        scanline_len = 1 + width
-    elif bit_depth == 4:
-        scanline_len = 2 + width // 2 if width & 1 else 1 + width // 2
-    elif bit_depth == 2:
-        scanline_len = 2 + width // 4 if width & 3 else 1 + width // 4
-    elif bit_depth == 1:
+    if bit_depth == 1:
         scanline_len = 2 + width // 8 if width & 7 else 1 + width // 8
 
+    elif bit_depth == 2:
+        scanline_len = 2 + width // 4 if width & 3 else 1 + width // 4
+    elif bit_depth == 4:
+        scanline_len = 2 + width // 2 if width & 1 else 1 + width // 2
+    elif bit_depth == 8:
+        scanline_len = 1 + width
     filters = set()
     j = 0
-    for i in range(height):
+    for _ in range(height):
         filters.add(u_data[j])
         j += scanline_len
 

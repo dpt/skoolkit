@@ -92,10 +92,7 @@ class BinWriter:
         self.subs = defaultdict(list, {0: []})
         self.keep = None
         self.nowarn = None
-        if data:
-            self.data = []
-        else:
-            self.data = None
+        self.data = [] if data else None
 
     def _parse_skool(self, skoolfile):
         f = open_file(skoolfile)
@@ -126,10 +123,7 @@ class BinWriter:
         if address is None:
             address = skool_address
         subbed = max(self.subs)
-        if subbed:
-            operations = self.subs[subbed]
-        else:
-            operations = ['']
+        operations = self.subs[subbed] if subbed else ['']
         if skool_address not in removed:
             original_op = partition_unquoted(line[6:], ';')[0].strip()
             address = self._add_instructions(address, skool_address, operations, original_op, removed)
@@ -143,10 +137,7 @@ class BinWriter:
             address += self._get_size(operation, address, '>')
         self.address_map.setdefault(skool_address, str(address))
         after = [(i[0].overwrite, i[1], i[0].append) for i in parsed if not i[0].prepend]
-        if skool_address is None:
-            offset = 0
-        else:
-            offset = skool_address - address
+        offset = 0 if skool_address is None else skool_address - address
         if not after or after[0][2]:
             overwrite, operation, sub = False, original_op, False
         else:

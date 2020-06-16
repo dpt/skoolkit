@@ -24,14 +24,8 @@ def run(infile, outfile, options):
     ram = list(read_bin_file(infile, 49152))
     org = options.org or 65536 - len(ram)
     snapshot = [0] * org + ram + [0] * (65536 - org - len(ram))
-    if options.start is None:
-        start = org
-    else:
-        start = options.start
-    if options.stack is None:
-        stack = org
-    else:
-        stack = options.stack
+    start = org if options.start is None else options.start
+    stack = org if options.stack is None else options.stack
     for spec in options.pokes:
         poke(snapshot, spec)
     parent_dir = os.path.dirname(outfile)

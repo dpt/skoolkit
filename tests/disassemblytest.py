@@ -89,7 +89,10 @@ class AsmTestCase(DisassembliesTestCase):
             self.assertTrue(stderr[0].startswith('Parsed {}'.format(skool)))
             self.assertIn(len(stderr), (2, 3))
         else:
-            self.assertTrue(any([line.startswith('Parsed {}'.format(skool)) for line in stderr]))
+            self.assertTrue(
+                any(line.startswith('Parsed {}'.format(skool)) for line in stderr)
+            )
+
         self.assertTrue(stderr[-1].startswith('Wrote ASM to stdout'))
 
 class CtlTestCase(DisassembliesTestCase):

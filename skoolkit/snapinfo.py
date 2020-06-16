@@ -157,10 +157,7 @@ def _analyse_z80(z80file):
     reg.f = header[1]
     reg.bc = get_word(header, 2)
     reg.hl = get_word(header, 4)
-    if version == 1:
-        reg.pc = get_word(header, 6)
-    else:
-        reg.pc = get_word(header, 32)
+    reg.pc = get_word(header, 6) if version == 1 else get_word(header, 32)
     reg.sp = get_word(header, 8)
     reg.i = header[10]
     reg.r = 128 * (header[12] & 1) + (header[11] & 127)
@@ -189,10 +186,7 @@ def _analyse_z80(z80file):
             addr_range = block_dict.get(page_num)
             if addr_range is None and page_num - 3 == bank:
                 addr_range = '49152-65535 C000-FFFF'
-            if addr_range:
-                addr_range = ' ({})'.format(addr_range)
-            else:
-                addr_range = ''
+            addr_range = ' ({})'.format(addr_range) if addr_range else ''
             i += 3
             if block_len == 65535:
                 block_len = 16384
@@ -240,8 +234,7 @@ def _print_ramp(block, variables):
     return lines
 
 def _print_spcr(block, variables):
-    lines = []
-    lines.append('Border: {}'.format(block[0]))
+    lines = ['Border: {}'.format(block[0])]
     ch7ffd = block[1]
     variables['ch7ffd'] = ch7ffd
     bank = ch7ffd & 7
@@ -249,8 +242,7 @@ def _print_spcr(block, variables):
     return lines
 
 def _print_z80r(block, variables):
-    lines = []
-    lines.append('Interrupts: {}abled'.format('en' if block[27] else 'dis'))
+    lines = ['Interrupts: {}abled'.format('en' if block[27] else 'dis')]
     lines.append('Interrupt mode: {}'.format(block[28]))
     reg = Registers()
     reg.f = block[0]
@@ -341,10 +333,7 @@ def _analyse_sna(snafile):
     reg.f = sna[21]
     reg.a = sna[22]
     reg.sp = get_word(sna, 23)
-    if is128:
-        reg.pc = get_word(sna, 49179)
-    else:
-        reg.pc = get_word(sna, reg.sp - 16357)
+    reg.pc = get_word(sna, 49179) if is128 else get_word(sna, reg.sp - 16357)
     print('Registers:')
     for line in reg.get_lines():
         print('  ' + line)
@@ -437,7 +426,7 @@ def _find_tile(snapshot, coords):
         coords, steps = coords.split('-', 1)
     try:
         x, y = [get_int_param(i) for i in coords.split(',', 1)]
-        if not 0 <= x < 32 or not 0 <= y < 24:
+        if not (0 <= x < 32 and 0 <= y < 24):
             raise ValueError
     except ValueError:
         raise SkoolKitError('Invalid tile coordinates: {}'.format(coords))

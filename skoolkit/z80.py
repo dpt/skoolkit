@@ -31,10 +31,7 @@ def _convert_chars(text):
     s = ''
     for p in split_quoted(text):
         if p.startswith('"') and p.endswith('"'):
-            if p.startswith('"\\'):
-                s += str(ord(p[2:-1]))
-            else:
-                s += str(ord(p[1:-1]))
+            s += str(ord(p[2:-1])) if p.startswith('"\\') else str(ord(p[1:-1]))
         else:
             s += p
     return s
@@ -101,10 +98,7 @@ def split_operands(text):
     return [e.strip() for e in split_unquoted(text, ',')]
 
 def _index_code(op):
-    if op.startswith('('):
-        reg = op[1:3]
-    else:
-        reg = op[:2]
+    reg = op[1:3] if op.startswith('(') else op[:2]
     return 221 + 32 * INDEX_REG_PAIRS.index(reg)
 
 def _reg_index(reg):
@@ -311,9 +305,9 @@ class Assembler:
         if op2 is None:
             if op1 == '(HL)':
                 return (233,)
-            if op1 == '(IX)':
+            elif op1 == '(IX)':
                 return (221, 233)
-            if op1 == '(IY)':
+            elif op1 == '(IY)':
                 return (253, 233)
             addr = self.parse_word(op1)
             return (195, addr % 256, addr // 256)
@@ -472,10 +466,7 @@ class Assembler:
     def _assemble_defs(self, items):
         if items:
             span = self.parse_word(items[0], default=0)
-            if len(items) > 1:
-                value = self.parse_byte(items[1], default=0)
-            else:
-                value = 0
+            value = self.parse_byte(items[1], default=0) if len(items) > 1 else 0
             return (value,) * span
 
     def _assemble_defw(self, items):

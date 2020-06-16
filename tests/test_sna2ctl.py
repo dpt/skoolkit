@@ -177,10 +177,7 @@ class Sna2CtlTest(SkoolKitTestCase):
         return map_data
 
     def _create_fuse_profile(self, addresses):
-        profile = []
-        for a in addresses:
-            profile.append('0x{0:X},1'.format(a))
-        return profile
+        return ['0x{0:X},1'.format(a) for a in addresses]
 
     def _create_specemu_log(self, addresses):
         registers = [
@@ -191,8 +188,7 @@ class Sna2CtlTest(SkoolKitTestCase):
             "BC: 0xA3EA\tBC': 0x1521",
             "AF: 0x0022\tAF': 0x000A",
         ]
-        log = []
-        log.extend(registers)
+        log = list(registers)
         log.append('')
         t_states = 56789
         for a in addresses:
@@ -211,8 +207,7 @@ class Sna2CtlTest(SkoolKitTestCase):
         return log
 
     def _create_zero_log(self, addresses, decimal):
-        log = ['All numbers are in {}decimal'.format('' if decimal else 'hexa')]
-        log.append('')
+        log = ['All numbers are in {}decimal'.format('' if decimal else 'hexa'), '']
         addr_fmt = '{0}' if decimal else '{0:x}'
         t_states = 47
         for a in addresses:
@@ -304,10 +299,7 @@ class Sna2CtlTest(SkoolKitTestCase):
             self.run_sna2ctl('-m {} {}'.format(nonexistent_map, binfile))
 
     def _test_generation(self, data, exp_ctl, code_map=None, options='', exp_err=''):
-        if isinstance(data, str):
-            infile = data
-        else:
-            infile = self.write_bin_file(data)
+        infile = data if isinstance(data, str) else self.write_bin_file(data)
         mapfile = None
         if code_map:
             mapfile = self.write_bin_file(self._create_z80_map(code_map))

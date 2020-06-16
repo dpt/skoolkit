@@ -27,12 +27,8 @@ def _get_word(word):
     return (word % 256, word // 256)
 
 def _make_tap_block(data, header=False):
-    if header:
-        flag = 0
-    else:
-        flag = 255
-    block = [0, 0, flag]
-    block.extend(data)
+    flag = 0 if header else 255
+    block = [0, 0, flag, *data]
     parity = 0
     for b in block:
         parity ^= b

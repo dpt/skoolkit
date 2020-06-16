@@ -106,10 +106,7 @@ def get_config(name):
     config = {}
     for k, v in COMMANDS.get(name, {}).items():
         if isinstance(v, tuple):
-            if isinstance(v[0], tuple):
-                config[k] = []
-            else:
-                config[k] = v[0]
+            config[k] = [] if isinstance(v[0], tuple) else v[0]
         else:
             config[k] = v
     skoolkit_ini = find_file('skoolkit.ini', ('', expanduser('~/.skoolkit')))

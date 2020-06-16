@@ -80,10 +80,7 @@ def parse_asm_block_directive(directive, stack):
     infix = directive[len(prefix):len(prefix) + 1]
     suffix = directive[len(prefix) + len(infix):].rstrip()
     if prefix in ('ofix', 'bfix', 'rfix', 'isub', 'ssub', 'rsub') and infix in '+-' and suffix in ('begin', 'else', 'end'):
-        if stack:
-            cur_op = stack[-1]
-        else:
-            cur_op = (None, None)
+        cur_op = stack[-1] if stack else (None, None)
         if suffix == 'begin':
             if prefix == cur_op[0]:
                 raise SkoolParsingError('{0} inside {1}{2} block'.format(directive, cur_op[0], cur_op[1]))
@@ -129,10 +126,7 @@ def parse_asm_sub_fix_directive(directive):
     overwrite = '|' in prefix
     append = '+' in prefix
     op, sep, comment = partition_unquoted(directive, ';')
-    if sep:
-        comment = comment.strip()
-    else:
-        comment = None
+    comment = comment.strip() if sep else None
     label, lsep, op = partition_unquoted(op, ':')
     flags = Flags(prepend, final, overwrite, append)
     if lsep:
@@ -205,10 +199,7 @@ def parse_register(line):
     if not delimiters[0]:
         elements = line.split(None, 1)
         reg = elements[0]
-        if len(elements) > 1:
-            desc = elements[1]
-        else:
-            desc = ''
+        desc = elements[1] if len(elements) > 1 else ''
     return delimiters, reg, desc
 
 def _parse_registers(lines, mode, keep_lines):
@@ -248,10 +239,7 @@ def parse_entry_header(comments, ignores, mode, keep_lines=False):
     index = 0
     last_line = ""
     for line in comments:
-        if keep_lines:
-            s_line = line.rstrip()
-        else:
-            s_line = line.strip()
+        s_line = line.rstrip() if keep_lines else line.strip()
         if s_line:
             sections[index].append(s_line)
             last_line = s_line
@@ -730,7 +718,7 @@ class SkoolParser:
 
     def _calculate_entry_sizes(self):
         for entry in self.memory_map:
-            address = max([i.address for i in entry.instructions if i.address is not None])
+            address = max(i.address for i in entry.instructions if i.address is not None)
             last_instruction = self.get_instruction(address)
             entry.size = address + (self._assembler.get_size(last_instruction.operation, address) or 1) - entry.address
 
@@ -780,10 +768,7 @@ class Mode:
         self.create_labels = create_labels
         self.asm_labels = asm_labels
         self.assembler = assembler
-        if case == CASE_LOWER:
-            self.addr_fmt = '{0:04x}'
-        else:
-            self.addr_fmt = '{0:04X}'
+        self.addr_fmt = '{0:04x}' if case == CASE_LOWER else '{0:04X}'
         self.weights = {
             'isub': int(asm_mode > 0),
             'ssub': 2 * int(asm_mode > 1),
@@ -935,30 +920,28 @@ class InstructionUtility:
         :param case: The case to convert to: 0 for no conversion, 1 for lower
                      case, or 2 for upper case.
         """
-        if base or case:
-            if base == BASE_16:
-                if case == CASE_LOWER:
-                    hex2fmt = '${0:02x}'
-                    hex4fmt = '${0:04x}'
-                else:
-                    hex2fmt = '${0:02X}'
-                    hex4fmt = '${0:04X}'
+        if not (base or case):
+            return
+        if base == BASE_16:
+            if case == CASE_LOWER:
+                hex2fmt = '${0:02x}'
+                hex4fmt = '${0:04x}'
             else:
-                hex2fmt = None
-                hex4fmt = None
-            for entry in entries:
-                for instruction in entry.instructions:
-                    operation = self._convert_case(instruction.operation, case)
-                    if base and operation:
-                        operation = self._convert_base(operation, hex2fmt, hex4fmt)
-                    instruction.operation = operation
+                hex2fmt = '${0:02X}'
+                hex4fmt = '${0:04X}'
+        else:
+            hex2fmt = None
+            hex4fmt = None
+        for entry in entries:
+            for instruction in entry.instructions:
+                operation = self._convert_case(instruction.operation, case)
+                if base and operation:
+                    operation = self._convert_base(operation, hex2fmt, hex4fmt)
+                instruction.operation = operation
 
     def _convert_base(self, operation, hex2fmt, hex4fmt):
         if operation.upper().startswith(('DEFB ', 'DEFM ', 'DEFS ', 'DEFW ')):
-            if operation.upper().startswith('DEFW'):
-                hex_fmt = hex4fmt
-            else:
-                hex_fmt = hex2fmt
+            hex_fmt = hex4fmt if operation.upper().startswith('DEFW') else hex2fmt
             converted = operation[:4]
             prefix = None
             for p in split_quoted(operation[4:]):
@@ -1220,10 +1203,7 @@ class SkoolEntry:
         instruction.container = self
         if insert:
             index = len(self.instructions) - 1
-            if index:
-                instruction.org = None
-            else:
-                instruction.org = self.instructions[0].org
+            instruction.org = None if index else self.instructions[0].org
             instruction.mid_block_comment = self.instructions[index].mid_block_comment
             self.instructions[index].mid_block_comment = None
             self.instructions.insert(index, instruction)
@@ -1465,7 +1445,7 @@ class Cell:
         self.wrappable = None
 
     def get_width(self):
-        return max([len(line) for line in self.contents])
+        return max(len(line) for line in self.contents)
 
 class ListParser:
     def __init__(self, bullet=''):

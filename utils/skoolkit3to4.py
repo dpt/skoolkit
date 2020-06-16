@@ -126,10 +126,16 @@ def convert_ref(reffile_f):
     # [Graphics]
     if 'Graphics' in sections:
         sections['PageContent:Graphics'] = sections['Graphics']
-        if not ('Paths' in sections and any([line.startswith('Graphics=') for line in sections['Paths']])):
+        if not (
+            'Paths' in sections
+            and any(line.startswith('Graphics=') for line in sections['Paths'])
+        ):
             add_line(sections, 'Paths', 'Graphics=graphics/graphics.html')
         index_section = 'Index:Graphics:Graphics'
-        if not (index_section in sections and any([line == 'Graphics' for line in sections[index_section]])):
+        if (
+            index_section not in sections
+            or 'Graphics' not in sections[index_section]
+        ):
             add_line(sections, index_section, 'Graphics', ['GraphicGlitches'])
         del sections['Graphics']
 

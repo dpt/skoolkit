@@ -221,18 +221,19 @@ def flip_udgs(udgs, flip=1):
     :param flip: 1 to flip horizontally, 2 to flip vertically, or 3 to flip
                  horizontally and vertically.
     """
-    if flip:
-        flipped_udgs = set()
+    if not flip:
+        return
+    flipped_udgs = set()
+    for row in udgs:
+        for udg in row:
+            if id(udg) not in flipped_udgs:
+                udg.flip(flip)
+                flipped_udgs.add(id(udg))
+    if flip & 1:
         for row in udgs:
-            for udg in row:
-                if id(udg) not in flipped_udgs:
-                    udg.flip(flip)
-                    flipped_udgs.add(id(udg))
-        if flip & 1:
-            for row in udgs:
-                row.reverse()
-        if flip & 2:
-            udgs.reverse()
+            row.reverse()
+    if flip & 2:
+        udgs.reverse()
 
 # API
 def rotate_udgs(udgs, rotate=1):
@@ -243,33 +244,34 @@ def rotate_udgs(udgs, rotate=1):
     :param udgs: The array of UDGs.
     :param rotate: The number of rotations to perform.
     """
-    if rotate:
-        rotated_udgs = set()
+    if not rotate:
+        return
+    rotated_udgs = set()
+    for row in udgs:
+        for udg in row:
+            if id(udg) not in rotated_udgs:
+                udg.rotate(rotate)
+                rotated_udgs.add(id(udg))
+    if rotate & 3 == 1:
+        rotated = []
+        for i in range(max([len(r) for r in udgs])):
+            rotated.append([])
+            for udg__ in udgs:
+                if i < len(udg__):
+                    rotated[-1].insert(0, udg__[i])
+        udgs[:] = rotated
+    elif rotate & 3 == 2:
+        udgs.reverse()
         for row in udgs:
-            for udg in row:
-                if id(udg) not in rotated_udgs:
-                    udg.rotate(rotate)
-                    rotated_udgs.add(id(udg))
-        if rotate & 3 == 1:
-            rotated = []
-            for i in range(max([len(r) for r in udgs])):
-                rotated.append([])
-                for j in range(len(udgs)):
-                    if i < len(udgs[j]):
-                        rotated[-1].insert(0, udgs[j][i])
-            udgs[:] = rotated
-        elif rotate & 3 == 2:
-            udgs.reverse()
-            for row in udgs:
-                row.reverse()
-        elif rotate & 3 == 3:
-            rotated = []
-            for i in range(max([len(r) for r in udgs])):
-                rotated.insert(0, [])
-                for j in range(len(udgs)):
-                    if i < len(udgs[j]):
-                        rotated[0].append(udgs[j][i])
-            udgs[:] = rotated
+            row.reverse()
+    elif rotate & 3 == 3:
+        rotated = []
+        for i in range(max(len(r) for r in udgs)):
+            rotated.insert(0, [])
+            for udg_ in udgs:
+                if i < len(udg_):
+                    rotated[0].append(udg_[i])
+        udgs[:] = rotated
 
 def adjust_udgs(udgs, flip, rotate):
     flip_udgs(udgs, flip)

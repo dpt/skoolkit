@@ -56,10 +56,7 @@ def _get_load_params(param_str):
     return params[:6]
 
 def _load_block(snapshot, block, start, length=None, step=None, offset=None, inc=None, index=1):
-    if length is None:
-        data = block[index:-1]
-    else:
-        data = block[index:index + length]
+    data = block[index:-1] if length is None else block[index:index + length]
     if step is None:
         step = 1
     if offset is None:

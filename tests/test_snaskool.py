@@ -3076,7 +3076,7 @@ class SkoolWriterTest(SkoolKitTestCase):
         index = 1
         for i in range(3):
             ctl = 'b'
-            for j in range(5):
+            for _ in range(5):
                 self.assertEqual(skool[index], '{}{:05} DEFB 0,0'.format(ctl, address))
                 ctl = ' '
                 address += 2

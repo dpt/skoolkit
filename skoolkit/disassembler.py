@@ -77,19 +77,13 @@ class OperandFormatter:
     def _num_str(self, value, num_bytes, base):
         if base == 'c':
             if self.is_char(value & 127):
-                if value & 128:
-                    suffix = '+' + self._num_str(128, 1, DEFAULT_BASE)
-                else:
-                    suffix = ''
+                suffix = '+' + self._num_str(128, 1, DEFAULT_BASE) if value & 128 else ''
                 if value & 127 in (34, 92):
                     return r'"\{}"'.format(chr(value & 127)) + suffix
                 return '"{}"'.format(chr(value & 127)) + suffix
             base = DEFAULT_BASE
-        if base == 'm':
-            if num_bytes == 1:
-                value = 256 - value
-            else:
-                value = 65536 - value
+        elif base == 'm':
+            value = 256 - value if num_bytes == 1 else 65536 - value
         if value > 255 or num_bytes > 1:
             return self.word_formats[base].format(value)
         return self.byte_formats[base].format(value)
@@ -160,10 +154,7 @@ class Disassembler:
         return (address, self.defb_dir(data, sublengths, defm), data)
 
     def _defb_lines(self, start, end, sublengths, defm=False):
-        if defm:
-            max_size = self.defm_size
-        else:
-            max_size = self.defb_size
+        max_size = self.defm_size if defm else self.defb_size
         if sublengths[0][0] or end - start <= max_size:
             return [self._defb_line(start, self.snapshot[start:end], sublengths, defm)]
         instructions = []
@@ -286,10 +277,7 @@ class Disassembler:
 
     def jr_arg(self, template, a, base):
         offset = self.snapshot[(a + 1) & 65535]
-        if offset < 128:
-            address = a + 2 + offset
-        else:
-            address = a + offset - 254
+        address = a + 2 + offset if offset < 128 else a + offset - 254
         if 0 <= address < 65536:
             return template.format(self.op_formatter.format_word(address, base)), 2
         return self._defb(a, 2)
@@ -311,10 +299,7 @@ class Disassembler:
         return ','.join(items)
 
     def defb_dir(self, data, sublengths=((0, DEFAULT_BASE),), defm=False):
-        if defm:
-            directive = self.defm
-        else:
-            directive = self.defb
+        directive = self.defm if defm else self.defb
         return directive + self.defb_items(data, sublengths)
 
     def _defb(self, a, length):

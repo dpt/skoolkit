@@ -219,10 +219,7 @@ class BasicLister:
         if num_str:
             num = _get_number(self.snapshot, i + 1)
             str_val = float(num_str)
-            if num:
-                delta = abs(1 - str_val / num)
-            else:
-                delta = abs(str_val)
+            delta = abs(1 - str_val / num) if num else abs(str_val)
             if delta > 1e-9:
                 return '{{{}}}'.format(num)
         return ''
@@ -314,10 +311,7 @@ class VariableLister:
         dims_str = ','.join([str(d) for d in dims])
         str_len = dims[-1]
         strings = [''.join([self.text.get_chars(self.snapshot[k]) for k in range(j, j + str_len)]) for j in range(v_start, v_end, str_len)]
-        if len(dims) > 1:
-            values = _unflatten(strings, dims[:-1])
-        else:
-            values = strings[0]
+        values = _unflatten(strings, dims[:-1]) if len(dims) > 1 else strings[0]
         line = '{}$({})={!r}'.format(name, dims_str, values)
         return v_end, line
 
