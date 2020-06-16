@@ -45,7 +45,7 @@ def _get_bytes(depth, scale):
                 b = p[:2] * scale + p[2:4] * scale + p[4:6] * scale + p[6:] * scale
             else:
                 b = p[:4] * scale + p[4:] * scale
-            bd_bytes[scale].append(tuple([int(b[i:i + 8], 2) for i in range(0, len(b), 8)]))
+            bd_bytes[scale].append(tuple(int(b[i:i + 8], 2) for i in range(0, len(b), 8)))
     return bd_bytes[scale]
 
 class PngWriter:
@@ -73,10 +73,7 @@ class PngWriter:
 
         # tRNS
         if has_trans:
-            if frame1.alpha < 0:
-                alpha = self.alpha
-            else:
-                alpha = frame1.alpha & 255
+            alpha = self.alpha if frame1.alpha < 0 else frame1.alpha & 255
             if alpha != 255:
                 self._write_chunk(img_file, (116, 82, 78, 83, alpha))
 
@@ -115,11 +112,7 @@ class PngWriter:
         self.crc_table = []
         for i in range(256):
             c = i
-            for k in range(8):
-                if c & 1:
-                    c = 3988292384 ^ (c >> 1)
-                else:
-                    c = c >> 1
+            c = 3988292384 ^ (c >> 1) if c & 1 else c >> 1
             self.crc_table.append(c)
 
     def _create_png_method_dict(self):
@@ -199,15 +192,9 @@ class PngWriter:
 
     def _build_image_data(self, frame, palette_size, bit_depth, attr_map, flash_rect=None):
         masked = frame.mask and frame.has_masks
-        if masked:
-            mask = self.masks[frame.mask]
-        else:
-            mask = self.masks[0]
+        mask = self.masks[frame.mask] if masked else self.masks[0]
         full_size = not frame.cropped
-        if palette_size == 1:
-            bd = 0
-        else:
-            bd = bit_depth
+        bd = 0 if palette_size == 1 else bit_depth
         build_method = self.png_method_dict[bd][full_size][masked]
         frame.attr_map = attr_map
 

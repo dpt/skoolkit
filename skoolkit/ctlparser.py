@@ -52,10 +52,7 @@ def parse_params(ctl, params):
 def _parse_sublengths(spec, subctl, default_base):
     length = 0
     lengths = []
-    if subctl == 'C':
-        sublengths = [spec]
-    else:
-        sublengths = split_unquoted(spec, ':')
+    sublengths = [spec] if subctl == 'C' else split_unquoted(spec, ':')
     required = True
     for num in sublengths:
         sublength, base = _parse_length(num, default_base, required)
@@ -151,10 +148,7 @@ class CtlParser:
                 elif ctl == 'L':
                     count = lengths[0][0]
                     if count > 1:
-                        if len(lengths) > 1:
-                            repeat_entries = lengths[1][0]
-                        else:
-                            repeat_entries = 0
+                        repeat_entries = lengths[1][0] if len(lengths) > 1 else 0
                         loop_end = start + count * (end - start)
                         if loop_end > 65536:
                             warn('Loop crosses 64K boundary:\n{}'.format(s_line))
@@ -219,10 +213,7 @@ class CtlParser:
                     if index < 0:
                         raise CtlParserError("blank directive with no containing block")
                     entry_ctl = self._ctls[entry_addresses[index]]
-                    if entry_ctl in 'cstw':
-                        ctl = entry_ctl.upper()
-                    else:
-                        ctl = 'B'
+                    ctl = entry_ctl.upper() if entry_ctl in 'cstw' else 'B'
                 try:
                     int_params = parse_params(ctl, params[1:])
                 except ValueError:

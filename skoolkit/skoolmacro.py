@@ -311,11 +311,7 @@ def parse_address_range(text, index, width):
     addresses = []
     while address <= end_address:
         addresses.append(address)
-        if len(addresses) % width:
-            address += h_step
-        else:
-            address += v_step - (width - 1) * h_step
-
+        address += h_step if len(addresses) % width else v_step - (width - 1) * h_step
     return end, addresses * num
 
 def _parse_crop_spec(text, index):
@@ -361,10 +357,7 @@ def get_params(param_string, num=0, defaults=(), names=(), safe=True):
         num = len(names)
     if param_string:
         for p in param_string.split(','):
-            if index < len(names):
-                name = names[index]
-            else:
-                name = index
+            name = names[index] if index < len(names) else index
             if p and names:
                 match = RE_PARAM_NAME.match(p)
                 if match:
@@ -520,17 +513,11 @@ def parse_call(writer, text, index, *cwd):
     if arg_string:
         for arg in writer.expand(arg_string).split(','):
             a1, sep, a2 = arg.partition('=')
-            if sep:
-                v = a2
-            else:
-                v = a1
+            v = a2 if sep else a1
             try:
                 value = evaluate(v)
             except ValueError:
-                if v:
-                    value = v
-                else:
-                    value = None
+                value = v if v else None
             if sep:
                 kwargs[a1] = value
             else:
@@ -585,10 +572,7 @@ def parse_eval(fields, lower, text, index, *cwd):
     elif base == 10:
         fmt = '{:0{}}'
     elif base == 16:
-        if lower:
-            fmt = '{:0{}x}'
-        else:
-            fmt = '{:0{}X}'
+        fmt = '{:0{}x}' if lower else '{:0{}X}'
     else:
         raise MacroParsingError("Invalid base ({}): {}".format(base, text[index:end]))
     return end, fmt.format(value, width)
@@ -765,10 +749,7 @@ def parse_n(base, lower, text, index, *cwd):
         prefix = suffix = ''
     if base == BASE_16 or (tohex and base != BASE_10):
         if hwidth is None:
-            if 0 <= value < 256:
-                hwidth = 2
-            else:
-                hwidth = 4
+            hwidth = 2 if 0 <= value < 256 else 4
         if lower:
             return end, '{}{:0{}x}{}'.format(prefix, value, hwidth, suffix)
         return end, '{}{:0{}X}{}'.format(prefix, value, hwidth, suffix)
@@ -941,7 +922,7 @@ def parse_udgarray(text, index, snapshot=None, req_fname=True):
     if req_fname:
         if not fname and frame is None:
             raise MacroParsingError('Missing filename: #UDGARRAY{}'.format(text[index:end]))
-        if not fname and not frame:
+        if not (fname or frame):
             raise MacroParsingError('Missing filename or frame ID: #UDGARRAY{}'.format(text[index:end]))
     return end, crop_rect, fname, frame, alt, (udg_array, scale, flip, rotate, mask, tindex, alpha)
 

@@ -3202,7 +3202,8 @@ class SkoolParserTest(SkoolKitTestCase):
         self.assertEqual(parser.get_instruction(50008).operation, 'DEFW START+END/256')
 
     def test_error_duplicate_label(self):
-        skool = """
+        with self.assertRaisesRegex(SkoolParsingError, 'Duplicate label START at 40001'):
+            skool = """
             @start
             ; Start
             @label=START
@@ -3212,7 +3213,6 @@ class SkoolParserTest(SkoolKitTestCase):
             @label=START
             c40001 RET
         """
-        with self.assertRaisesRegex(SkoolParsingError, 'Duplicate label START at 40001'):
             self._get_parser(skool, asm_mode=1, asm_labels=True)
 
     def test_equ_directive_html_mode(self):
@@ -4414,7 +4414,7 @@ class SkoolParserTest(SkoolKitTestCase):
             (None, '32770', 'RET', 'Done')
         ]
         exp_subs = exp_instructions
-        self._test_sub_and_fix_directives(skool, exp_instructions, exp_subs)
+        self._test_sub_and_fix_directives(skool, exp_subs, exp_subs)
 
     def test_sub_and_fix_directives_add_default_auto_label(self):
         skool = """

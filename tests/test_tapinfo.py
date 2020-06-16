@@ -93,8 +93,7 @@ class TapinfoTest(SkoolKitTestCase):
         self.assertEqual(dedent(exp_output).lstrip(), output)
 
     def test_tzx_file(self):
-        blocks = []
-        blocks.append(create_tzx_header_block('<TEST_tzx>', data_type=0))
+        blocks = [create_tzx_header_block('<TEST_tzx>', data_type=0)]
         blocks.append(create_tzx_data_block([1, 4, 16]))
         blocks.append(create_tzx_header_block('characters', data_type=2))
         blocks.append(create_tzx_data_block([64, 0]))

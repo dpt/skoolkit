@@ -261,10 +261,7 @@ class HtmlWriter:
         return self.formatter.format_template(self._get_page_id(), name, fields)
 
     def _expand_values(self, obj, *exceptions):
-        if isinstance(obj, str):
-            d = self.get_dictionary(obj)
-        else:
-            d = obj
+        d = self.get_dictionary(obj) if isinstance(obj, str) else obj
         for k in d:
             if k not in exceptions:
                 try:
@@ -289,7 +286,7 @@ class HtmlWriter:
                 values.extend(['0'] * (3 - len(values)))
                 base = 10
             try:
-                colours[k] = tuple([int(n, base) for n in values])
+                colours[k] = tuple(int(n, base) for n in values)
             except ValueError:
                 raise SkoolKitError("Invalid colour spec: {}={}".format(k, v))
         return colours
@@ -572,10 +569,7 @@ class HtmlWriter:
 
     def _build_box_page_list_entries(self, cwd, bullets):
         page_id = self._get_page_id()
-        if bullets:
-            prefix = '-'
-        else:
-            prefix = ''
+        prefix = '-' if bullets else ''
         entries = []
         for j, (anchor, title, intro, items) in enumerate(self.box_pages[page_id]):
             anchor = self.expand(anchor, cwd)
@@ -616,16 +610,11 @@ class HtmlWriter:
     def _build_list_items(self, cwd, items, level=0):
         if not items:
             return ''
-        list_items = []
-        for item, subitems in items:
-            list_items.append({
+        list_items = [{
                 'text': self.expand(item, cwd),
                 'subitems': self._build_list_items(cwd, subitems, level + 1)
-            })
-        if level > 0:
-            indent = level
-        else:
-            indent = ''
+            } for item, subitems in items]
+        indent = level if level > 0 else ''
         t_list_items_subs = {
             'indent': indent,
             'items': list_items
@@ -706,9 +695,15 @@ class HtmlWriter:
                 'bytes': instruction.byte_values
             })
 
-        entry_dict['annotated'] = int(any([i.comment and i.comment.text for i in entry.instructions]))
+        entry_dict['annotated'] = int(
+            any(i.comment and i.comment.text for i in entry.instructions)
+        )
+
         entry_dict['end_comment'] = [self.expand(p, cwd).strip() for p in entry.end_comment]
-        entry_dict['labels'] = int(any([instruction.asm_label for instruction in entry.instructions]))
+        entry_dict['labels'] = int(
+            any(instruction.asm_label for instruction in entry.instructions)
+        )
+
         entry_dict['show_bytes'] = int(self.game_vars['Bytes'] != '' and any(i.byte_values.values for i in entry.instructions))
 
         return entry_dict
@@ -761,7 +756,7 @@ class HtmlWriter:
         if map_details['Includes']:
             return True
         entry_types = map_details.get('EntryTypes', DEF_MEMORY_MAP_ENTRY_TYPES)
-        return any([entry.ctl in entry_types for entry in self.memory_map])
+        return any(entry.ctl in entry_types for entry in self.memory_map)
 
     def write_map(self, map_name):
         fname, cwd = self._set_cwd(map_name, 'memory_map')
@@ -819,10 +814,7 @@ class HtmlWriter:
             f.write(contents)
 
     def _set_cwd(self, page_id, include, asm_fname=None, js=None):
-        if asm_fname is None:
-            fname = self.paths[page_id]
-        else:
-            fname = asm_fname
+        fname = self.paths[page_id] if asm_fname is None else asm_fname
         cwd = os.path.dirname(fname)
 
         if cwd not in self.stylesheets:
@@ -958,17 +950,16 @@ class HtmlWriter:
                         with a '/' or contains an image path ID replacement
                         field.
         """
-        if fname:
-            expanded = self._expand_image_path(fname)
-            if expanded[-4:].lower() == '.png':
-                suffix = ''
-            else:
-                suffix = '.png'
-            if expanded != fname or fname.startswith('/'):
-                return expanded.lstrip('/') + suffix
-            if path_id in self.paths:
-                return join(self._expand_image_path(self.paths[path_id]), fname + suffix)
-            raise SkoolKitError("Unknown path ID '{0}' for image file '{1}'".format(path_id, fname))
+        if not fname:
+            return
+
+        expanded = self._expand_image_path(fname)
+        suffix = '' if expanded[-4:].lower() == '.png' else '.png'
+        if expanded != fname or fname.startswith('/'):
+            return expanded.lstrip('/') + suffix
+        if path_id in self.paths:
+            return join(self._expand_image_path(self.paths[path_id]), fname + suffix)
+        raise SkoolKitError("Unknown path ID '{0}' for image file '{1}'".format(path_id, fname))
 
     def _expand_image_path(self, path):
         orig_path = prev_path = path
@@ -1033,10 +1024,7 @@ class HtmlWriter:
         if self.asm_single_page:
             href = self._asm_relpath(cwd, address, code_id, True)
         else:
-            if container:
-                container_address = container.address
-            else:
-                container_address = address
+            container_address = container.address if container else address
             if anchor:
                 try:
                     if evaluate(anchor[1:]) == container_address:
@@ -1066,7 +1054,7 @@ class HtmlWriter:
         end, crop_rect, fname, frame, alt, params = skoolmacro.parse_udg(text, index)
         addr, attr, scale, step, inc, flip, rotate, mask, tindex, alpha, mask_addr, mask_step = params
         udgs = lambda: [[build_udg(self.snapshot, addr, attr, step, inc, flip, rotate, mask, mask_addr, mask_step)]]
-        if not fname and not frame:
+        if not (fname or frame):
             fname = format_template(self.udg_fname_template, 'UDGFilename', addr=addr, attr=attr, scale=scale)
             if frame == '':
                 frame = fname
@@ -1135,7 +1123,7 @@ class Bytes:
     def __format__(self, spec):
         if not spec:
             return ''
-        if spec and spec.count(spec[0]) > 1:
+        if spec.count(spec[0]) > 1:
             bspec, sep, fmt = (spec[1:] + spec[0]).split(spec[0])[:3]
         else:
             bspec, sep, fmt = spec, '', ''

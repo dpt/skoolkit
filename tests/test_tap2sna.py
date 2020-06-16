@@ -41,10 +41,7 @@ class Tap2SnaTest(SkoolKitTestCase):
     def _get_snapshot(self, start=16384, data=None, options='', load_options=None, blocks=None, tzx=False):
         if blocks is None:
             blocks = [create_tap_data_block(data)]
-        if tzx:
-            tape_file = self._write_tzx(blocks)
-        else:
-            tape_file = self._write_tap(blocks)
+        tape_file = self._write_tzx(blocks) if tzx else self._write_tap(blocks)
         z80file = self.write_bin_file(suffix='.z80')
         if load_options is None:
             load_options = '--ram load=1,{}'.format(start)
@@ -405,7 +402,7 @@ class Tap2SnaTest(SkoolKitTestCase):
         size = len(data)
         dest = 16387
         snapshot = self._get_snapshot(start, data, '--ram move={},{},{}'.format(src, size, dest))
-        self.assertEqual(data, snapshot[start:start + len(data)])
+        self.assertEqual(data, snapshot[src:src + len(data)])
         self.assertEqual(data, snapshot[dest:dest + len(data)])
 
     def test_ram_move_hex_address(self):

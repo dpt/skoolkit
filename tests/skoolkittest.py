@@ -31,11 +31,16 @@ def get_parity(data):
     return parity
 
 def create_header_block(title='', start=0, length=0, data_type=3):
-    header = [0, data_type]
-    header.extend([ord(c) for c in title[:10].ljust(10)])
-    header.extend((length % 256, length // 256))
-    header.extend((start % 256, start // 256))
-    header.extend((0, 0))
+    header = [
+        0,
+        data_type,
+        *[ord(c) for c in title[:10].ljust(10)],
+        *(length % 256, length // 256),
+        *(start % 256, start // 256),
+        0,
+        0,
+    ]
+
     header.append(get_parity(header))
     return header
 
@@ -101,8 +106,7 @@ class StdIn:
         self.buffer = self
 
     def __iter__(self):
-        for line in self.data.split('\n'):
-            yield line
+        yield from self.data.split('\n')
 
     def __enter__(self):
         return self
@@ -293,10 +297,7 @@ class SkoolKitTestCase(TestCase):
         return z80r
 
     def _get_zxstrampage(self, page, compress, data):
-        if compress:
-            ram = zlib.compress(bytearray(data), 9)
-        else:
-            ram = data
+        ram = zlib.compress(bytearray(data), 9) if compress else data
         ramp = [82, 65, 77, 80] # RAMP
         size = len(ram) + 3
         ramp.extend((size % 256, size // 256, 0, 0))

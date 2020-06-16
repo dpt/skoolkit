@@ -73,10 +73,7 @@ class Bin2TapTest(SkoolKitTestCase):
         i, j = j, j + 21
         exp_header = [19, 0, 0, 3]
         exp_header += title
-        if scr:
-            exp_header += [19, 27, 0, 64]
-        else:
-            exp_header += [19, 0, 0, 91]
+        exp_header += [19, 27, 0, 64] if scr else [19, 0, 0, 91]
         exp_header += [0, 0]
         exp_header.append(self._get_parity(exp_header))
         self.assertEqual(exp_header, tap_data[i:j])
@@ -101,8 +98,7 @@ class Bin2TapTest(SkoolKitTestCase):
         self.assertEqual(exp_data, tap_data[i:j])
 
         # Data
-        exp_data = []
-        exp_data.extend(self._get_word(len(bin_data) + 2))
+        exp_data = list(self._get_word(len(bin_data) + 2))
         exp_data.append(255)
         exp_data.extend(bin_data)
         exp_data.append(self._get_parity(exp_data))

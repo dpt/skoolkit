@@ -98,10 +98,7 @@ def set_z80_registers(z80, *specs):
     for spec in specs:
         reg, sep, val = spec.lower().partition('=')
         if sep:
-            if reg.startswith('^'):
-                size = len(reg) - 1
-            else:
-                size = len(reg)
+            size = len(reg) - 1 if reg.startswith('^') else len(reg)
             if reg == 'pc' and z80[6:8] != [0, 0]:
                 offset = 6
             else:
@@ -267,19 +264,15 @@ def _read_sna(data, page=None):
     return data[27:32795] + data[index:index + 16384]
 
 def _read_z80(data, page=None):
-    if sum(data[6:8]) > 0:
-        version = 1
-    else:
-        version = 2
+    version = 1 if sum(data[6:8]) > 0 else 2
     if version == 1:
         header_size = 30
-    else:
-        header_size = 32 + data[30]
-    header = data[:header_size]
-    if version == 1:
+        header = data[:header_size]
         if header[12] & 32:
             return _decompress_block(data[header_size:-4])
         return data[header_size:]
+    else:
+        header_size = 32 + data[30]
     machine_id = data[34]
     extension = ()
     if (version == 2 and machine_id < 2) or (version == 3 and machine_id in (0, 1, 3)):

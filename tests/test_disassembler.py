@@ -1829,7 +1829,7 @@ class DisassemblerTest(SkoolKitTestCase):
             snapshot = sna_prefix + [int(hex_bytes[i:i + 2], 16) for i in range(0, len(hex_bytes), 2)]
             disassembler = self._get_disassembler(snapshot)
             instructions = disassembler.disassemble(len(sna_prefix), len(snapshot), 'n')
-            operations = tuple([inst[1] for inst in instructions])
+            operations = tuple(inst[1] for inst in instructions)
             self.assertEqual(operations, ops)
 
     def test_ld1(self):

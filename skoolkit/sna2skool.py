@@ -32,10 +32,7 @@ def get_ctl_parser(ctlfiles, infile, start, end, def_start, def_end):
         ctlfiles.extend(sorted(glob.glob(prefix + '*.ctl')))
     if ctlfiles and '0' not in ctlfiles:
         # Use control file(s)
-        if len(ctlfiles) > 1:
-            suffix = 's'
-        else:
-            suffix = ''
+        suffix = 's' if len(ctlfiles) > 1 else ''
         info('Using control file{}: {}'.format(suffix, ', '.join(ctlfiles)))
         ctl_parser = CtlParser()
         ctl_parser.parse_ctls(ctlfiles, start, end)

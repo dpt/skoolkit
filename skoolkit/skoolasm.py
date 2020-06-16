@@ -76,11 +76,7 @@ class AsmWriter:
         self.desc_width = self._get_text_width('comment')
 
         # Line terminator
-        if self._get_int_property(properties, 'crlf', 0):
-            self.end = '\r\n'
-        else:
-            self.end = '\n'
-
+        self.end = '\r\n' if self._get_int_property(properties, 'crlf', 0) else '\n'
         # Label suffix
         if self._get_int_property(properties, 'label-colons', 1):
             self.label_suffix = ':'
@@ -179,10 +175,7 @@ class AsmWriter:
 
     def print_equs(self, equs):
         if equs:
-            if self.lower:
-                equ_dir = 'equ'
-            else:
-                equ_dir = 'EQU'
+            equ_dir = 'equ' if self.lower else 'EQU'
             for label, value in equs:
                 subs = {
                     'label': label,
@@ -303,7 +296,7 @@ class AsmWriter:
             elif block.startswith(TABLE_MARKER):
                 table_lines = self.table_writer.format_table(block[len(TABLE_MARKER):].lstrip())
                 if table_lines:
-                    table_width = max([len(line) for line in table_lines])
+                    table_width = max(len(line) for line in table_lines)
                     if table_width > width:
                         self.warn('Table in entry at {0} is {1} characters wide'.format(self.entry.address, table_width))
                     lines.extend(table_lines)
@@ -407,11 +400,7 @@ class AsmWriter:
         instructions = self.entry.instructions
 
         while i < len(instructions) or lines:
-            if i < len(instructions):
-                instruction = instructions[i]
-            else:
-                instruction = None
-
+            instruction = instructions[i] if i < len(instructions) else None
             # Deal with remaining comment lines or rowspan on the previous
             # instruction
             if lines or rows:
@@ -473,9 +462,7 @@ class TableWriter:
         return self._create_table_text()
 
     def _build_cell_matrix(self):
-        cell_matrix = []
-        for row in self.table.rows:
-            cell_matrix.append([None] * self.table.num_cols)
+        cell_matrix = [[None] * self.table.num_cols for _ in self.table.rows]
         for cell in self.table.cells:
             for x in range(cell.col_index, cell.col_index + cell.colspan):
                 for y in range(cell.row_index, cell.row_index + cell.rowspan):
@@ -493,10 +480,7 @@ class TableWriter:
         cell_left_transparent = True
         cell = self._get_cell(col_index, row_index)
         while cell:
-            if cell.transparent and cell_left_transparent:
-                border = ' '
-            else:
-                border = self.border_v
+            border = ' ' if cell.transparent and cell_left_transparent else self.border_v
             text = ''
             if cell.contents and (first_line or row_index == cell.row_index + cell.rowspan - 1):
                 text = cell.contents.pop(0)
@@ -556,10 +540,7 @@ class TableWriter:
             else:
                 line += self.border_join
             if cell_contents:
-                if cell.contents:
-                    text = cell.contents.pop(0)
-                else:
-                    text = ''
+                text = cell.contents.pop(0) if cell.contents else ''
                 line += ' {} '.format(text.ljust(self.table.get_cell_width(col_index, cell_above.colspan)))
             else:
                 if cell.transparent and cell_above_transparent:

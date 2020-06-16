@@ -41,8 +41,8 @@ def convert_ref(reffile_f):
     # GameStatusBufferIncludes
     gsb_includes = None
     index, game_section = _get_section(sections, 'Game')
-    prefix = 'GameStatusBufferIncludes='
     if game_section:
+        prefix = 'GameStatusBufferIncludes='
         for line in game_section:
             if line.startswith(prefix):
                 gsb_includes = line[len(prefix):]

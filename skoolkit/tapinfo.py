@@ -239,10 +239,7 @@ def _get_str(data, dump=False):
         return _hex_dump(data)
     text = ''
     for b in data:
-        if b in CHARS:
-            text += CHARS[b]
-        else:
-            text += get_char(b, '?', '?')
+        text += CHARS[b] if b in CHARS else get_char(b, '?', '?')
     return text
 
 def _format_text(prefix, data, start, length, dump=False):
@@ -363,7 +360,7 @@ def _get_block_info(data, i, block_num):
         header = 'Archive info'
         num_strings = data[i + 2]
         j = i + 3
-        for k in range(num_strings):
+        for _ in range(num_strings):
             try:
                 str_len = data[j + 1]
             except IndexError:
@@ -374,7 +371,7 @@ def _get_block_info(data, i, block_num):
     elif block_id == 51:
         header = 'Hardware type'
         i += 1
-        for j in range(data[i - 1]):
+        for _ in range(data[i - 1]):
             hw_type, hw_ids = HARDWARE_TYPE.get(data[i], ('Unknown', {}))
             info.extend((
                 '- Type: {}'.format(hw_type),
@@ -459,8 +456,8 @@ def _analyse_tzx(tzx, basic_block, options):
         raise SkoolKitError("Not a TZX file")
 
     try:
-        version = 'Version: {}.{}'.format(tzx[8], tzx[9])
         if not basic_block:
+            version = 'Version: {}.{}'.format(tzx[8], tzx[9])
             print(version)
     except IndexError:
         raise SkoolKitError('TZX version number not found')

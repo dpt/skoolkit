@@ -58,11 +58,7 @@ def create_crc_table():
     crc_table = []
     for n in range(256):
         c = n
-        for k in range(8):
-            if c & 1:
-                c = 3988292384 ^ (c >> 1)
-            else:
-                c = c >> 1
+        c = 3988292384 ^ (c >> 1) if c & 1 else c >> 1
         crc_table.append(c)
     return crc_table
 
@@ -158,10 +154,7 @@ class ImageWriterTest:
             row_flashing = False
             min_y_floor = len(pixels)
             for j in range(min_j, max_j):
-                if y < y0:
-                    rows = min(y - y0 + scale, height)
-                else:
-                    rows = min(y1 - y, scale)
+                rows = min(y - y0 + scale, height) if y < y0 else min(y1 - y, scale)
                 pixel_row = []
                 pixel_row2 = []
                 x = x0_floor
@@ -175,10 +168,7 @@ class ImageWriterTest:
                         has_masks = 1
                     else:
                         all_masked = 0
-                    if mask and udg.mask:
-                        mask_byte = udg.mask[j]
-                    else:
-                        mask_byte = 0
+                    mask_byte = udg.mask[j] if mask and udg.mask else 0
                     min_k = max(0, (x0 - x) // scale)
                     max_k = min(8, 1 + (x1 - x - 1) // scale)
                     x += min_k * scale
@@ -187,11 +177,8 @@ class ImageWriterTest:
                     byte <<= min_k
                     mask_byte <<= min_k
                     min_x_floor = len(pixel_row)
-                    for k in range(min_k, max_k):
-                        if x < x0:
-                            cols = min(x - x0 + scale, width)
-                        else:
-                            cols = min(x1 - x, scale)
+                    for _ in range(min_k, max_k):
+                        cols = min(x - x0 + scale, width) if x < x0 else min(x1 - x, scale)
                         ink_p = (i_rgb,) * cols
                         paper_p = (p_rgb,) * cols
                         trans_p = (TRANSPARENT,) * cols
@@ -210,10 +197,7 @@ class ImageWriterTest:
                             else:
                                 pixel, f_pixel = paper_p, ink_p
                         else:
-                            if byte & 128:
-                                pixel, f_pixel = ink_p, paper_p
-                            else:
-                                pixel, f_pixel = paper_p, ink_p
+                            pixel, f_pixel = (ink_p, paper_p) if byte & 128 else (paper_p, ink_p)
                         pixel_rgb = pixel[0]
                         if pixel_rgb != TRANSPARENT:
                             has_non_trans = True
@@ -1004,10 +988,10 @@ class PngWriterTest(SkoolKitTestCase, ImageWriterTest):
         return i
 
     def _get_pixels_from_image_data(self, bit_depth, palette, image_data, width):
-        if bit_depth == 4:
-            scanline_len = (2 if width & 1 else 1) + width // 2
-        elif bit_depth == 2:
+        if bit_depth == 2:
             scanline_len = (2 if width & 3 else 1) + width // 4
+        elif bit_depth == 4:
+            scanline_len = (2 if width & 1 else 1) + width // 2
         else:
             scanline_len = (2 if width & 7 else 1) + width // 8
         pixels = []
@@ -1021,11 +1005,11 @@ class PngWriterTest(SkoolKitTestCase, ImageWriterTest):
                 pixel_row.append(palette[(byte & 240) // 16])
                 pixel_row.append(palette[byte & 15])
             elif bit_depth == 2:
-                for b in range(4):
+                for _ in range(4):
                     pixel_row.append(palette[(byte & 192) // 64])
                     byte *= 4
             else:
-                for b in range(8):
+                for _ in range(8):
                     pixel_row.append(palette[(byte & 128) // 128])
                     byte *= 2
         pixels.append(pixel_row[:width])

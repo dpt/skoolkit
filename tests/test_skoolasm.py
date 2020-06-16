@@ -790,7 +790,7 @@ class AsmWriterTest(SkoolKitTestCase, CommonSkoolMacroTest):
             except ValueError:
                 wrap_column_width_min = 10
             text_lines = wrap(text, wrap_column_width_min)
-            actual_width = max([len(line) for line in text_lines])
+            actual_width = max(len(line) for line in text_lines)
             exp_lines = ['; | {} |'.format(line.ljust(actual_width)) for line in text_lines]
             for line_no, exp_line in enumerate(exp_lines, 3):
                 self.assertEqual(asm[line_no][:len(exp_line)], exp_line)
@@ -2605,8 +2605,7 @@ class TableMacroTest(SkoolKitTestCase):
         properties['tab'] = '1' if tab else '0'
         properties['instruction-width'] = instr_width
         properties['warnings'] = '1' if warn else '0'
-        writer = AsmWriter(skool_parser, properties, {})
-        return writer
+        return AsmWriter(skool_parser, properties, {})
 
     def _assert_error(self, skool, error):
         self.clear_streams()

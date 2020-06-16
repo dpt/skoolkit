@@ -85,10 +85,7 @@ def clock(operation, prefix, *args, **kwargs):
     return result
 
 def _get_search_dirs(extra_search_dirs, first_search_dir=None):
-    if first_search_dir:
-        search_dirs = [first_search_dir]
-    else:
-        search_dirs = []
+    search_dirs = [first_search_dir] if first_search_dir else []
     search_dirs.extend(SEARCH_DIRS)
     search_dirs.extend(extra_search_dirs)
     return search_dirs
@@ -197,10 +194,7 @@ def run(infiles, options):
     add_lines(ref_parser, options.config_specs)
 
     if reffiles:
-        if len(reffiles) > 1:
-            suffix = 's'
-        else:
-            suffix = ''
+        suffix = 's' if len(reffiles) > 1 else ''
         notify('Using ref file{0}: {1}'.format(suffix, ', '.join(reffiles)))
     elif skoolfile != '-':
         notify('Found no ref file for ' + normpath(skoolfile))
@@ -212,10 +206,7 @@ def run(infiles, options):
     skool_parser = clock(SkoolParser, 'Parsing {}'.format(fname), skoolfile, case=options.case, base=options.base,
                          html=True, create_labels=options.create_labels, asm_labels=options.asm_labels,
                          variables=options.variables)
-    if options.output_dir == '.':
-        topdir = ''
-    else:
-        topdir = normpath(options.output_dir)
+    topdir = '' if options.output_dir == '.' else normpath(options.output_dir)
     file_info = FileInfo(topdir, game_dir, options.new_images)
     html_writer = html_writer_class(skool_parser, ref_parser, file_info)
 
@@ -395,10 +386,7 @@ def main(args):
         namespace.config_specs.append('Game/AsmSinglePage=1')
     if namespace.writer:
         namespace.config_specs.append('Config/HtmlWriterClass={}'.format(namespace.writer))
-    if namespace.pages:
-        namespace.pages = namespace.pages.split(',')
-    else:
-        namespace.pages = []
+    namespace.pages = namespace.pages.split(',') if namespace.pages else []
     run(namespace.infiles, namespace)
     if show_timings:
         notify('Done ({0:0.2f}s)'.format(time.time() - start))

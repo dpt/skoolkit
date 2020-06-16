@@ -418,8 +418,11 @@ class MethodTest(HtmlWriterTestCase):
             (8, 'WHITE', '#cde', (204, 221, 238)),
             (7, 'YELLOW', '198,197,0', (198, 197, 0))
         )
-        colours = ['[Colours]']
-        colours.extend(['{}={}'.format(name, spec) for index, name, spec, rgb in exp_colours])
+        colours = [
+            '[Colours]',
+            *['{}={}'.format(name, spec) for index, name, spec, rgb in exp_colours],
+        ]
+
         writer = self._get_writer(ref='\n'.join(colours))
         for index, name, spec, rgb in exp_colours:
             self.assertEqual(writer.image_writer.colours[index], rgb)
@@ -906,63 +909,63 @@ class MethodTest(HtmlWriterTestCase):
         self._test_format_template(ref, 'loop', fields, exp_output)
 
     def test_format_template_foreach_no_parameters(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid foreach directive: Not enough parameters \(expected 2\): ''$"):
+            ref = """
             [Template:loop]
             <# foreach() #>
             {item}
             <# endfor #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid foreach directive: Not enough parameters \(expected 2\): ''$"):
             self._get_writer(ref=ref).format_template('loop', {})
 
     def test_format_template_foreach_missing_parameter(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid foreach directive: Not enough parameters \(expected 2\): 'item'$"):
+            ref = """
             [Template:loop]
             <# foreach(item) #>
             {item}
             <# endfor #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid foreach directive: Not enough parameters \(expected 2\): 'item'$"):
             self._get_writer(ref=ref).format_template('loop', {})
 
     def test_format_template_foreach_extra_parameter(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid foreach directive: Too many parameters \(expected 2\): 'item,list,surplus'$"):
+            ref = """
             [Template:loop]
             <# foreach(item,list,surplus) #>
             {item}
             <# endfor #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid foreach directive: Too many parameters \(expected 2\): 'item,list,surplus'$"):
             self._get_writer(ref=ref).format_template('loop', {})
 
     def test_format_template_foreach_no_closing_bracket(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid foreach directive: No closing bracket: \(item,list$"):
+            ref = """
             [Template:loop]
             <# foreach(item,list #>
             {item}
             <# endfor #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid foreach directive: No closing bracket: \(item,list$"):
             self._get_writer(ref=ref).format_template('loop', {})
 
     def test_format_template_foreach_unknown_variable(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid foreach directive: name 'nonexistent' is not defined$"):
+            ref = """
             [Template:loop]
             <# foreach(item,nonexistent) #>
             {item}
             <# endfor #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid foreach directive: name 'nonexistent' is not defined$"):
             self._get_writer(ref=ref).format_template('loop', {})
 
     def test_format_template_foreach_noniterable_parameter(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid foreach directive: '0' is not a list$"):
+            ref = """
             [Template:loop]
             <# foreach(item,0) #>
             {item}
             <# endfor #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid foreach directive: '0' is not a list$"):
             self._get_writer(ref=ref).format_template('loop', {})
 
     def test_format_template_if_int_values(self):
@@ -1154,53 +1157,53 @@ class MethodTest(HtmlWriterTestCase):
         self._test_format_template(ref, 'elses', fields, exp_output)
 
     def test_format_template_if_missing_parameter(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid if directive: Expression is missing$"):
+            ref = """
             [Template:if]
             <# if() #>
             Content
             <# endif #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid if directive: Expression is missing$"):
             self._get_writer(ref=ref).format_template('if', {})
 
     def test_format_template_if_no_closing_bracket(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid if directive: No closing bracket: \(true$"):
+            ref = """
             [Template:if]
             <# if(true #>
             Content
             <# endif #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid if directive: No closing bracket: \(true$"):
             self._get_writer(ref=ref).format_template('if', {})
 
     def test_format_template_if_unknown_variable(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid if directive: name 'nonexistent' is not defined$"):
+            ref = """
             [Template:if]
             <# if(nonexistent) #>
             Content
             <# endif #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid if directive: name 'nonexistent' is not defined$"):
             self._get_writer(ref=ref).format_template('if', {})
 
     def test_format_template_if_invalid_replacement_field(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid if directive: Unrecognised field 'nonexistent'$"):
+            ref = """
             [Template:if]
             <# if({nonexistent}) #>
             Content
             <# endif #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid if directive: Unrecognised field 'nonexistent'$"):
             self._get_writer(ref=ref).format_template('if', {})
 
     def test_format_template_if_syntax_error(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid if directive: Syntax error in expression: '\(1;\)'$"):
+            ref = """
             [Template:if]
             <# if((1;)) #>
             Content
             <# endif #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid if directive: Syntax error in expression: '\(1;\)'$"):
             self._get_writer(ref=ref).format_template('if', {})
 
     def test_format_template_include(self):
@@ -1256,35 +1259,35 @@ class MethodTest(HtmlWriterTestCase):
         self._test_format_template(ref, 't1', {}, exp_output)
 
     def test_format_template_include_extra_parameter(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid include directive: 't1,t2' template does not exist$"):
+            ref = """
             [Template:include]
             <# include(t1,t2) #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid include directive: 't1,t2' template does not exist$"):
             self._get_writer(ref=ref).format_template('include', {})
 
     def test_format_template_include_no_closing_bracket(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid include directive: No closing bracket: \(t1$"):
+            ref = """
             [Template:include]
             <# include(t1 #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid include directive: No closing bracket: \(t1$"):
             self._get_writer(ref=ref).format_template('include', {})
 
     def test_format_template_include_unknown_template(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid include directive: 'nonexistent' template does not exist$"):
+            ref = """
             [Template:include]
             <# include(nonexistent) #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid include directive: 'nonexistent' template does not exist$"):
             self._get_writer(ref=ref).format_template('include', {})
 
     def test_format_template_include_invalid_replacement_field(self):
-        ref = """
+        with self.assertRaisesRegex(SkoolKitError, "^Invalid include directive: Unrecognised field 'no'$"):
+            ref = """
             [Template:include]
             <# include({no}) #>
         """
-        with self.assertRaisesRegex(SkoolKitError, "^Invalid include directive: Unrecognised field 'no'$"):
             self._get_writer(ref=ref).format_template('include', {})
 
     def test_format_template_with_indented_directives(self):
@@ -4824,7 +4827,7 @@ class HtmlOutputTest(HtmlWriterOutputTestCase):
             'header': 'Routines'
         }
 
-        for base in (None, BASE_10):
+        for _ in (None, BASE_10):
             writer = self._get_writer(skool=skool, base=BASE_10)
             writer.write_asm_entries()
 

@@ -68,10 +68,7 @@ class MockSkoolParser:
 def mock_config(name):
     config = {}
     for k, v in COMMANDS.get(name, {}).items():
-        if isinstance(v[0], tuple):
-            config[k] = []
-        else:
-            config[k] = v[0]
+        config[k] = [] if isinstance(v[0], tuple) else v[0]
     return config
 
 class Skool2HtmlTest(SkoolKitTestCase):

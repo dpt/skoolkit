@@ -183,10 +183,7 @@ class ControlDirectiveComposer:
         return full_length, ':'.join(lengths)
 
     def _get_defw_length(self, operation):
-        if self.preserve_base:
-            word_fmt = FORMAT_PRESERVE_BASE
-        else:
-            word_fmt = FORMAT_NO_BASE
+        word_fmt = FORMAT_PRESERVE_BASE if self.preserve_base else FORMAT_NO_BASE
         full_length = 0
         lengths = []
         length = 0
@@ -204,10 +201,7 @@ class ControlDirectiveComposer:
         return full_length, ':'.join(lengths)
 
     def _get_defs_length(self, operation):
-        if self.preserve_base:
-            fmt = FORMAT_PRESERVE_BASE
-        else:
-            fmt = FORMAT_NO_BASE
+        fmt = FORMAT_PRESERVE_BASE if self.preserve_base else FORMAT_NO_BASE
         items = self.op_evaluator.split_operands(operation[5:])[:2]
 
         try:
@@ -348,8 +342,8 @@ class CtlWriter:
                 write_line('{} {} {}'.format(entry.ctl, address, entry.title).rstrip())
             else:
                 write_line('{0} {1}'.format(entry.ctl, address))
-                if self.keep_lines:
-                    self._write_lines(entry.title)
+            if self.keep_lines:
+                self._write_lines(entry.title)
 
         self._write_entry_ignoreua_directive(entry, DESCRIPTION)
         if entry.description and BLOCK_DESC in self.elements:
@@ -361,10 +355,7 @@ class CtlWriter:
                 self._write_lines(entry.registers[0].contents, 'R', address)
             else:
                 for reg in entry.registers:
-                    if reg.prefix:
-                        name = '{}:{}'.format(reg.prefix, reg.name)
-                    else:
-                        name = reg.name
+                    name = '{}:{}'.format(reg.prefix, reg.name) if reg.prefix else reg.name
                     write_line('R {} {} {}'.format(address, name.join(reg.delimiters), reg.contents).rstrip())
 
         self.write_body(entry)
@@ -376,10 +367,7 @@ class CtlWriter:
         self._write_blocks(entry.footer, address, True)
 
     def write_body(self, entry):
-        if entry.ctl in 'gu':
-            entry_ctl = 'b'
-        else:
-            entry_ctl = entry.ctl
+        entry_ctl = 'b' if entry.ctl in 'gu' else entry.ctl
         first_instruction = entry.instructions[0]
         if entry_ctl == 'i' and not first_instruction.operation:
             # Don't write any sub-blocks for an empty 'i' entry
@@ -432,7 +420,10 @@ class CtlWriter:
                             if self.keep_lines:
                                 write_comment = comment.rowspan > 1 or comment.text[0] != ['']
                             else:
-                                if comment.rowspan > 1 and not comment.text.replace('.', ''):
+                                if (
+                                    comment.rowspan > 1
+                                    and not comment_text.replace('.', '')
+                                ):
                                     comment_text = '.' + comment_text
                                 write_comment = comment_text != ''
                         if write_comment or ctl.lower() != entry_ctl or ctl != 'C' or has_bases:

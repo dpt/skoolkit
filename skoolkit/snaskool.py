@@ -108,7 +108,7 @@ class Entry:
                 self.bad_blocks.append(sub_block)
 
     def width(self):
-        return max([len(i.operation) for i in self.instructions])
+        return max(len(i.operation) for i in self.instructions)
 
     def get_ignoreua_directive(self, comment_type):
         return self.block.get_ignoreua_directive(comment_type)
@@ -127,13 +127,7 @@ class Disassembly:
         self.disassembler = get_component('Disassembler', snapshot, dconfig)
         self.ref_calc = get_component('SnapshotReferenceCalculator')
         self.ctl_parser = ctl_parser
-        if asm_hex:
-            if asm_lower:
-                self.address_fmt = '{0:04x}'
-            else:
-                self.address_fmt = '{0:04X}'
-        else:
-            self.address_fmt = '{0}'
+        self.address_fmt = ('{0:04x}' if asm_lower else '{0:04X}') if asm_hex else '{0}'
         self.entry_map = {}
         self.build(final, self_refs)
 
@@ -141,10 +135,7 @@ class Disassembly:
         self.instructions = {}
         self.entries = []
         self._create_entries()
-        if self.entries:
-            self.org = self.entries[0].address
-        else:
-            self.org = None
+        self.org = self.entries[0].address if self.entries else None
         if final:
             self._calculate_references(self_refs)
 
@@ -173,7 +164,7 @@ class Disassembly:
                         if sub_block.ctl == 's':
                             length = sublengths[0][0]
                         else:
-                            length = sum([s[0] for s in sublengths])
+                            length = sum(s[0] for s in sublengths)
                     else:
                         length = sub_block.end - sub_block.start
                     instructions = []
@@ -277,7 +268,12 @@ class SkoolWriter:
         self.write_asm_directives(*entry.asm_directives)
         self.write_asm_directives(entry.get_ignoreua_directive(TITLE))
 
-        if entry.ctl == 'i' and entry.blocks[-1].end >= 65536 and not entry.has_title and all([b.ctl == 'i' for b in entry.blocks]):
+        if (
+            entry.ctl == 'i'
+            and entry.blocks[-1].end >= 65536
+            and not entry.has_title
+            and all(b.ctl == 'i' for b in entry.blocks)
+        ):
             return
 
         for block in entry.bad_blocks:
@@ -383,10 +379,7 @@ class SkoolWriter:
             block.comment[0] = (0, comment)
         if multi_line or comment.startswith('{'):
             balance = comment.count('{') - comment.count('}')
-            if multi_line and balance < 0:
-                opening = '{' * (1 - balance)
-            else:
-                opening = '{'
+            opening = '{' * (1 - balance) if multi_line and balance < 0 else '{'
             if comment.startswith('{'):
                 opening = opening + ' '
             closing = '}' * max(1 + balance, 1)
@@ -436,7 +429,7 @@ class SkoolWriter:
             if index > 0 and entry.ctl == 'c' and ctl == '*' and write_refs:
                 self.write_referrers(instruction.referrers)
             self.write_asm_directives(*instruction.asm_directives)
-            self.write_asm_directives(block.get_ignoreua_directive(INSTRUCTION, instruction.address))
+            self.write_asm_directives(block.get_ignoreua_directive(INSTRUCTION, address))
             if entry.ctl in self.config['Semicolons'] or comment is not None:
                 write_line(('{}{} {:{}} ; {}'.format(ctl, self.address_str(address), operation, op_width, comment or '')).rstrip())
             else:
@@ -474,10 +467,7 @@ class SkoolWriter:
 
     def write_referrers(self, referrers, erefs=True):
         if referrers:
-            if erefs:
-                key = 'EntryPointRef'
-            else:
-                key = 'Ref'
+            key = 'EntryPointRef' if erefs else 'Ref'
             fields = {'ref': '#R' + self.address_str(referrers[-1], False)}
             if len(referrers) > 1:
                 key += 's'
@@ -510,10 +500,7 @@ class SkoolWriter:
                 block = wrap(line, self.comment_width)
                 lines.append(block[0])
                 if len(block) > 1:
-                    if block[0].endswith(' |'):
-                        indent = 2
-                    else:
-                        indent = block[0].rfind(' | ') + 3
+                    indent = 2 if block[0].endswith(' |') else block[0].rfind(' | ') + 3
                     while indent < len(block[0]) and block[0][indent] == ' ':
                         indent += 1
                     pad = ' ' * indent

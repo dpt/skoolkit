@@ -41,10 +41,7 @@ def run(skoolfile, options):
     templates = {t: t_parser.get_section(t, trim=False) for t in TEMPLATES if t_parser.has_section(t)}
 
     # Create the parser
-    if skoolfile == '-':
-        fname = 'stdin'
-    else:
-        fname = skoolfile
+    fname = 'stdin' if skoolfile == '-' else skoolfile
     asm_mode = options.asm_mode + 4 * int(options.force)
     parser = clock(options.quiet, 'Parsed {}'.format(fname), SkoolParser, skoolfile,
                    options.case, options.base, asm_mode, options.warn, options.fix_mode,
